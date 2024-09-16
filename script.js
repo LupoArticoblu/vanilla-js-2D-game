@@ -43,6 +43,8 @@ window.addEventListener("load", function(){
       this.frameX = 0;
       this.frameY = 0;
       this.speed = 0;
+      this.vy = 0;
+      this.gravity = 1;
     }
 
     draw(context) {
@@ -54,9 +56,28 @@ window.addEventListener("load", function(){
       this.x += this.speed; //<-movimento orizzontale
       if(input.keys.indexOf('ArrowRight') > -1) { 
         this.speed = 5;
+      }else if(input.keys.indexOf('ArrowLeft') > -1) {
+        this.speed = -5;
+      }else if(input.keys.indexOf('ArrowUp') > -1 &&  this.onGround()){
+        this.vy -= 33; 
       }else{
         this.speed = 0;
+      };
+
+      this.y += this.vy; //<-movimento verticale
+      if(!this.onGround()) {
+        this.vy += this.gravity;
+      } else {
+        this.vy = 0;
       }
+
+      if(this.y > this.gameHeight - this.height) {
+        this.y = this.gameHeight - this.height;
+      }
+      
+    }
+    onGround() {
+      return this.y >= this.gameHeight - this.height;
     }
   }
 
@@ -82,9 +103,9 @@ window.addEventListener("load", function(){
  
 
   function animate(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     player.draw(ctx);
     player.update(input);
-    ctx.clearRect(0, 0, canvas.width, canvas.height); 
     requestAnimationFrame(animate);
   }
 
