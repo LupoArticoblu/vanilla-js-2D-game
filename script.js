@@ -67,8 +67,10 @@ window.addEventListener("load", function(){
       this.y += this.vy; //<-movimento verticale
       if(!this.onGround()) {
         this.vy += this.gravity;
+        this.frameY = 1;
       } else {
         this.vy = 0;
+        this.frameY = 0;
       }
 
       if(this.y > this.gameHeight - this.height) {
@@ -82,11 +84,47 @@ window.addEventListener("load", function(){
   }
 
   class Background {
-
+    constructor(gameWidth, gameHeight) {
+      this.gameHeight = gameHeight;
+      this.gameWidth = gameWidth;
+      this.image = document.getElementById('background');
+      this.x = 0;
+      this.y = 0;
+      this.width = 2400;
+      this.height = 600;
+      this.speed = 10;
+    }
+    draw(context) {
+      context.drawImage(this.image, this.x, this.y, this.width, this.height);
+      //il loop d'immagine funziona solo se il background viene ridisegnato e ridistribuito dopo il this.width
+      context.drawImage(this.image, this.x + this.width - this.speed, this.y, this.width, this.height);
+    }
+    update() {
+      this.x-=this.speed;
+      if(this.x < -this.width) this.x = 0;
+    }
   }
 
   class Enemy {
+    constructor(gameWidth, gameHeight) {
+      this.gameWidth = gameWidth;
+      this.gameHeight = gameHeight;
+      this.width = 160;
+      this.height = 119;
+      this.x = this.gameWidth;
+      this.y = this.gameHeight - this.height;
+      this.frameX = 0;
+      this.image = document.getElementById('enemy');
+    }
 
+    draw(context) {
+      context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+    }
+
+    update() {
+      this.x -= gameSpeed;
+      if(this.x < -this.width) this.x = this.gameWidth;
+    }
   }
 
   function handleEnemy(){
@@ -99,13 +137,18 @@ window.addEventListener("load", function(){
 
   const input = new InputHandler();
   const player = new Player(canvas.width, canvas.height);
-  const background = new Background();
+  const background = new Background(canvas.width, canvas.height);
+  const enemy1 = new Enemy(canvas.width, canvas.height);
  
 
   function animate(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    background.draw(ctx);
     player.draw(ctx);
     player.update(input);
+    enemy1.draw(ctx);
+    enemy1.update();
+    background.update();
     requestAnimationFrame(animate);
   }
 
