@@ -3,7 +3,7 @@ window.addEventListener("load", function(){
   const ctx = canvas.getContext("2d");
   canvas.width = 800;
   canvas.height = 600;
-
+  let enemies = [];
   //terrà conto dei pulsanti premuti
   class InputHandler {
     constructor() {
@@ -115,6 +115,7 @@ window.addEventListener("load", function(){
       this.y = this.gameHeight - this.height;
       this.frameX = 0;
       this.image = document.getElementById('enemy');
+      this.speed = 8;
     }
 
     draw(context) {
@@ -122,13 +123,22 @@ window.addEventListener("load", function(){
     }
 
     update() {
-      this.x -= gameSpeed;
-      if(this.x < -this.width) this.x = this.gameWidth;
+      this.x -= this.speed;
     }
   }
 
-  function handleEnemy(){
-
+  //enemies.push(new Enemy(canvas.width, canvas.height));
+  function handleEnemy(deltaTime){
+    if(enemyTimer > enemyInterval + randomEnemyInterval){
+      enemies.push(new Enemy(canvas.width, canvas.height));
+      enemyTimer = 0;
+    }else{
+      enemyTimer += deltaTime;
+    }
+    enemies.forEach(enemy => {
+      enemy.draw(ctx);
+      enemy.update();
+    })
   }
 
   function displayStatusText(){
@@ -138,19 +148,24 @@ window.addEventListener("load", function(){
   const input = new InputHandler();
   const player = new Player(canvas.width, canvas.height);
   const background = new Background(canvas.width, canvas.height);
-  const enemy1 = new Enemy(canvas.width, canvas.height);
- 
-
-  function animate(){
+  //variabile di supporto che manterrà il tempo trascorso dall'ultima animazione
+  let lastTime = 0;
+  let enemyTimer = 0;
+  let enemyInterval = 1000;
+  let randomEnemyInterval = Math.random() * 1000 + 500;
+  function animate(timeStamp){
+    //la differenza in millisecondi tra timestamp del ciclo in corso e timestamp del ciclo precedente
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     background.draw(ctx);
     player.draw(ctx);
     player.update(input);
-    enemy1.draw(ctx);
-    enemy1.update();
-    background.update();
+    handleEnemy();
+    
+    //requestAnimationFrame ha una funzione speciale che genera automaticamente un timestamp e lo passa come argomento alla funzione richiamata;
     requestAnimationFrame(animate);
   }
-
-  animate();
+  //il primo timestamp non viene generato e riporta null, questo impedirà altri processi quindi passiamo in animate il primo timestamp come argomento 0
+  animate(0);
 });
