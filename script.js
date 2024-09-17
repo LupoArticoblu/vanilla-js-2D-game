@@ -4,6 +4,7 @@ window.addEventListener("load", function(){
   canvas.width = 800;
   canvas.height = 600;
   let enemies = [];
+  let score = 0;
   //terrà conto dei pulsanti premuti
   class InputHandler {
     constructor() {
@@ -40,19 +41,30 @@ window.addEventListener("load", function(){
       this.x = 0;
       this.y = this.gameHeight - this.height;
       this.image = document.getElementById('player');
+      this.maxFrame = 8;
       this.frameX = 0;
       this.frameY = 0;
       this.speed = 0;
       this.vy = 0;
       this.gravity = 1;
+      this.fps = 20;
+      this.frameTimer = 0;
+      this.frameInterval = 1000 / this.fps;
     }
 
     draw(context) {
-      context.fillStyle = 'white';
-      context.fillRect(this.x, this.y, this.width, this.height);
       context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
     }
-    update(input) {
+    update(input, deltaTime) {
+      //animazione Sprite
+      if(this.frameTimer > this.frameInterval) {
+        if(this.frameX >= this.maxFrame) this.frameX = 0;
+        else this.frameX++;
+        this.frameTimer = 0;
+      }else{
+        this.frameTimer += deltaTime;
+      }  
+      //movimento
       this.x += this.speed; //<-movimento orizzontale
       if(input.keys.indexOf('ArrowRight') > -1) { 
         this.speed = 5;
@@ -67,10 +79,13 @@ window.addEventListener("load", function(){
       this.y += this.vy; //<-movimento verticale
       if(!this.onGround()) {
         this.vy += this.gravity;
+        //cambiamo il valore di maxFrame per la proprietà this.y
+        this.maxFrame = 5;
         this.frameY = 1;
       } else {
         this.vy = 0;
         this.frameY = 0;
+        this.maxFrame = 8;
       }
 
       if(this.y > this.gameHeight - this.height) {
@@ -101,7 +116,6 @@ window.addEventListener("load", function(){
     }
     update() {
       this.x-=this.speed;
-      if(this.x < -this.width) this.x = 0;
     }
   }
 
@@ -111,19 +125,34 @@ window.addEventListener("load", function(){
       this.gameHeight = gameHeight;
       this.width = 160;
       this.height = 119;
+      this.image = document.getElementById('enemy');
       this.x = this.gameWidth;
       this.y = this.gameHeight - this.height;
       this.frameX = 0;
-      this.image = document.getElementById('enemy');
+      this.maxFrame = 5;
+      //per cronometrare il framerate ci serviranno 3 proprietà: this.fps(imposta i fotogrammi per secondo), this.frameTimer(conterà da 0 a frameInterval più volte), this.frameInterval(il valore d'arrivo in millisecondi) 
+      this.fps = 20;
+      this.frameTimer = 0;
+      this.frameInterval = 1000 / this.fps;
       this.speed = 8;
+      //creiamo una proprietà per eliminare dall'array enemies una volta usciti dallo schermo
+      this.markedForDeletion = false;
     }
 
     draw(context) {
       context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
     }
-
-    update() {
+    //inseriamo come argomento deltaTime per rendere lineare il processo d'immagine frameByFrame unita alla velocità stabilita da math.random
+    update(deltaTime) {
+      if(this.frameTimer > this.frameInterval) {
+        if (this.frameX >= this.maxFrame) this.frameX = 0;
+        else this.frameX++;
+        this.frameTimer = 0;
+      }else{
+        this.frameTimer += deltaTime;
+      }
       this.x -= this.speed;
+      if(this.x < 0 - this.width) this.markedForDeletion = true;
     }
   }
 
@@ -137,8 +166,9 @@ window.addEventListener("load", function(){
     }
     enemies.forEach(enemy => {
       enemy.draw(ctx);
-      enemy.update();
+      enemy.update(deltaTime);
     })
+    enemies = enemies.filter(enemy => !enemy.markedForDeletion);
   }
 
   function displayStatusText(){
@@ -160,8 +190,10 @@ window.addEventListener("load", function(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     background.draw(ctx);
     player.draw(ctx);
-    player.update(input);
-    handleEnemy();
+    //diamo accesso e passiamo come parametro deltaTime per avere un'animazione fluida come per enemy
+    player.update(input, deltaTime);
+
+    handleEnemy(deltaTime);
     
     //requestAnimationFrame ha una funzione speciale che genera automaticamente un timestamp e lo passa come argomento alla funzione richiamata;
     requestAnimationFrame(animate);
