@@ -5,6 +5,7 @@ window.addEventListener("load", function(){
   canvas.height = 600;
   let enemies = [];
   let score = 0;
+  let gameOver = false;
   //terrà conto dei pulsanti premuti
   class InputHandler {
     constructor() {
@@ -55,9 +56,25 @@ window.addEventListener("load", function(){
     draw(context) {
       context.strokeStyle = 'white';
       context.strokeRect(this.x, this.y, this.width, this.height);
+      context.beginPath();
+      context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 2 * Math.PI);
+      context.stroke();
       context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
     }
-    update(input, deltaTime) {
+    update(input, deltaTime, enemies) {
+      //collisione
+      enemies.forEach(enemy => {
+        //const dx = enemy.x - this.x;
+        //const dy = enemy.y - this.y;
+        //Senza la seguente correzione le precedentiindicazioni andavano a puntare verso il centro dell'oggetto in movimento ma non lo comprendevano nella sua totalità
+        const dx = (enemy.x + enemy.width / 2) - (this.x + this.width / 2);
+        const dy = (enemy.y + enemy.height / 2) - (this.y + this.height / 2);
+        const distance = Math.hypot(dx, dy);
+        if(distance < enemy.width / 2 + this.width / 2) {
+          gameOver = true;
+          
+        }
+      })
       //animazione Sprite
       if(this.frameTimer > this.frameInterval) {
         if(this.frameX >= this.maxFrame) this.frameX = 0;
@@ -144,6 +161,9 @@ window.addEventListener("load", function(){
     draw(context) {
       context.strokeStyle = 'white';
       context.strokeRect(this.x, this.y, this.width, this.height);
+      context.beginPath();
+      context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, 2 * Math.PI);
+      context.stroke();
       context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
     }
     //inseriamo come argomento deltaTime per rendere lineare il processo d'immagine frameByFrame unita alla velocità stabilita da math.random
@@ -185,6 +205,14 @@ window.addEventListener("load", function(){
     context.fillText('Score: ' + score, 20, 40);
     context.fillStyle = 'white';
     context.fillText('Score: ' + score, 22, 42);
+    //testo schermata game over
+    if(gameOver){
+      context.textAlign = 'center';
+      context.fillStyle = 'black';
+      context.fillText('GAME OVER, your score is ' + score, canvas.width / 2.01, 300);
+      context.fillStyle = 'white';
+      context.fillText('GAME OVER, your score is ' + score, canvas.width / 2, 302);
+    }
   }
 
   const input = new InputHandler();
@@ -203,12 +231,14 @@ window.addEventListener("load", function(){
     background.draw(ctx);
     player.draw(ctx);
     //diamo accesso e passiamo come parametro deltaTime per avere un'animazione fluida come per enemy
-    player.update(input, deltaTime);
+    //vediamo come rendere le collisioni tra 2 oggetti(tra un oggetto ed un array di oggetti in questo caso)
+    player.update(input, deltaTime, enemies);
+
     displayStatusText(ctx);
     handleEnemy(deltaTime);
     
     //requestAnimationFrame ha una funzione speciale che genera automaticamente un timestamp e lo passa come argomento alla funzione richiamata;
-    requestAnimationFrame(animate);
+    if(!gameOver) requestAnimationFrame(animate);
   }
   //il primo timestamp non viene generato e riporta null, questo impedirà altri processi quindi passiamo in animate il primo timestamp come argomento 0
   animate(0);
