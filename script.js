@@ -53,6 +53,8 @@ window.addEventListener("load", function(){
     }
 
     draw(context) {
+      context.strokeStyle = 'white';
+      context.strokeRect(this.x, this.y, this.width, this.height);
       context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
     }
     update(input, deltaTime) {
@@ -140,6 +142,8 @@ window.addEventListener("load", function(){
     }
 
     draw(context) {
+      context.strokeStyle = 'white';
+      context.strokeRect(this.x, this.y, this.width, this.height);
       context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
     }
     //inseriamo come argomento deltaTime per rendere lineare il processo d'immagine frameByFrame unita alla velocità stabilita da math.random
@@ -152,7 +156,10 @@ window.addEventListener("load", function(){
         this.frameTimer += deltaTime;
       }
       this.x -= this.speed;
-      if(this.x < 0 - this.width) this.markedForDeletion = true;
+      if(this.x < 0 - this.width){
+        this.markedForDeletion = true;
+        score++;
+      }
     }
   }
 
@@ -171,8 +178,13 @@ window.addEventListener("load", function(){
     enemies = enemies.filter(enemy => !enemy.markedForDeletion);
   }
 
-  function displayStatusText(){
-
+  function displayStatusText(context){
+    context.fillStyle = 'black';
+    context.font = '35px Helvetica';
+    //filltext è un metodo che ti permette di inserire testo e posizione in una sola riga
+    context.fillText('Score: ' + score, 20, 40);
+    context.fillStyle = 'white';
+    context.fillText('Score: ' + score, 22, 42);
   }
 
   const input = new InputHandler();
@@ -192,7 +204,7 @@ window.addEventListener("load", function(){
     player.draw(ctx);
     //diamo accesso e passiamo come parametro deltaTime per avere un'animazione fluida come per enemy
     player.update(input, deltaTime);
-
+    displayStatusText(ctx);
     handleEnemy(deltaTime);
     
     //requestAnimationFrame ha una funzione speciale che genera automaticamente un timestamp e lo passa come argomento alla funzione richiamata;
