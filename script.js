@@ -1,8 +1,8 @@
 window.addEventListener("load", function(){
   const canvas = document.getElementById("canvas1");
   const ctx = canvas.getContext("2d");
-  canvas.width = 800;
-  canvas.height = 600;
+  canvas.width = 1024;
+  canvas.height = 720;
   let enemies = [];
   let score = 0;
   let gameOver = false;
@@ -18,6 +18,9 @@ window.addEventListener("load", function(){
           e.key === "ArrowRight") 
           && this.keys.indexOf(e.key) === -1) {
             this.keys.push(e.key);
+        //nelle istruzioni dei comandi: se gameOver, riavvia il gioco col tasto invio    
+        } else if (e.key === "Enter" && gameOver) {
+          restart();
         }
       });
       //rimuovi i pulsanti premuti una volta che il pulsante viene rilasciato
@@ -39,7 +42,7 @@ window.addEventListener("load", function(){
       this.gameWidth = gameWidth;
       this.width = 200;
       this.height = 200;
-      this.x = 0;
+      this.x = 100;
       this.y = this.gameHeight - this.height;
       this.image = document.getElementById('player');
       this.maxFrame = 8;
@@ -53,6 +56,12 @@ window.addEventListener("load", function(){
       this.frameInterval = 1000 / this.fps;
     }
 
+    restart() {
+      this.x = 100;
+      this.y = this.gameHeight - this.height;
+      this.maxFrame = 8;
+      this.frameY = 0;
+    }
     draw(context) {
       context.beginPath();
       context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2.5, 0, 2 * Math.PI);
@@ -125,6 +134,9 @@ window.addEventListener("load", function(){
       this.width = 2400;
       this.height = 600;
       this.speed = 10;
+    }
+    restart() {
+      this.x= 0;
     }
     draw(context) {
       context.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -210,6 +222,16 @@ window.addEventListener("load", function(){
       context.fillText('GAME OVER, your score is ' + score, canvas.width / 2, 302);
     }
   }
+  //funzione riavvia gioco
+  function restart(){
+    player.restart();
+    background.restart();
+    enemies = [];
+    score = 0;
+    gameOver = false;
+    //il reset deve richiamare la funzione animate altrimenti il gioco nn ricomincerà
+    animate(0);
+  }
 
   const input = new InputHandler();
   const player = new Player(canvas.width, canvas.height);
@@ -229,7 +251,7 @@ window.addEventListener("load", function(){
     //diamo accesso e passiamo come parametro deltaTime per avere un'animazione fluida come per enemy
     //vediamo come rendere le collisioni tra 2 oggetti(tra un oggetto ed un array di oggetti in questo caso)
     player.update(input, deltaTime, enemies);
-
+    background.update();
     displayStatusText(ctx);
     handleEnemy(deltaTime);
     
