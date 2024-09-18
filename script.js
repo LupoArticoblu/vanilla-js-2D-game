@@ -1,7 +1,7 @@
 window.addEventListener("load", function(){
   const canvas = document.getElementById("canvas1");
   const ctx = canvas.getContext("2d");
-  canvas.width = 1024;
+  canvas.width = 800;
   canvas.height = 600;
   let enemies = [];
   let score = 0;
@@ -10,6 +10,9 @@ window.addEventListener("load", function(){
   class InputHandler {
     constructor() {
       this.keys=[];
+      this.touchY = '';
+      //creiamo una proprietà che sia la soglia di velocità del tocco
+      this.touchThreshold = 30;
       window.addEventListener("keydown", e => {
         //se l'evento ha un pulsante premuto(freccia giù), aggiungilo alla lista dei pulsanti premuti solo se non vi è gia'
         if((e.key === "ArrowDown"|| 
@@ -35,14 +38,29 @@ window.addEventListener("load", function(){
       });
       //implementiamo il tocco per i dispositivi mobile
       window.addEventListener('touchstart', e => {
-        console.log('start');
-      });
-      window.addEventListener('touchend', e => {
-        console.log('end');
+        //console.log('start');
+        //console.log(e.changedTouches[0].pageY);
+        this.touchY = e.changedTouches[0].pageY;
       });
       window.addEventListener('touchmove', e => {
-        console.log('move');
-      })  
+        //console.log('move');
+        //console.log(e.changedTouches[0].pageY); confrontiamo la coordinata corrente con la coordinata iniziale per determinare la direzione
+        const delta = e.changedTouches[0].pageY - this.touchY;
+        if(delta < -this.touchThreshold && this.keys.indexOf('swipe up') === -1) {
+          this.keys.push('swipe up');
+        } else if(delta > this.touchThreshold && this.keys.indexOf('swipe down') === -1) {
+          this.keys.push('swipe down');
+          if(gameOver) restart();
+        }
+      });  
+      window.addEventListener('touchend', e => {
+        //console.log('end');
+        //console.log(e.changedTouches[0].pageY);
+        console.log(this.keys);
+        this.keys.splice(this.keys.indexOf('swipe up'), 1);
+        this.keys.splice(this.keys.indexOf('swipe down'), 1);
+        
+      });
     }
   }
 
@@ -106,7 +124,8 @@ window.addEventListener("load", function(){
         this.speed = 5;
       }else if(input.keys.indexOf('ArrowLeft') > -1) {
         this.speed = -5;
-      }else if(input.keys.indexOf('ArrowUp') > -1 &&  this.onGround()){
+      }else if((input.keys.indexOf('ArrowUp') > -1 || input.keys.indexOf('swipe up') > -1) //<-controllo del salto
+      &&  this.onGround()){
         this.vy -= 33; 
       }else{
         this.speed = 0;
@@ -155,6 +174,7 @@ window.addEventListener("load", function(){
     }
     update() {
       this.x-=this.speed;
+      if(this.x === -this.width) this.x = 0;
     }
   }
 
@@ -227,9 +247,9 @@ window.addEventListener("load", function(){
     if(gameOver){
       context.textAlign = 'center';
       context.fillStyle = 'black';
-      context.fillText('GAME OVER, your score is ' + score + ' premi INVIO', canvas.width / 2.01, 300);
+      context.fillText('GAME OVER, your score is ' + score + ' press ENTER or scroll down', canvas.width / 2.01, 300);
       context.fillStyle = 'white';
-      context.fillText('GAME OVER, your score is ' + score + ' premi INVIO', canvas.width / 2, 302);
+      context.fillText('GAME OVER, your score is ' + score + ' press ENTER or scroll down', canvas.width / 2, 302);
     }
   }
   //funzione riavvia gioco
