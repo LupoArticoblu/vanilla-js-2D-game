@@ -2,7 +2,7 @@ window.addEventListener("load", function(){
   const canvas = document.getElementById("canvas1");
   const ctx = canvas.getContext("2d");
   canvas.width = 1024;
-  canvas.height = 720;
+  canvas.height = 600;
   let enemies = [];
   let score = 0;
   let gameOver = false;
@@ -32,6 +32,16 @@ window.addEventListener("load", function(){
         ) {
           this.keys.splice(this.keys.indexOf(e.key), 1);
         }
+      });
+      //implementiamo il tocco per i dispositivi mobile
+      window.addEventListener('touchstart', e => {
+        console.log('start');
+      });
+      window.addEventListener('touchend', e => {
+        console.log('end');
+      });
+      window.addEventListener('touchmove', e => {
+        console.log('move');
       })  
     }
   }
@@ -217,9 +227,9 @@ window.addEventListener("load", function(){
     if(gameOver){
       context.textAlign = 'center';
       context.fillStyle = 'black';
-      context.fillText('GAME OVER, your score is ' + score, canvas.width / 2.01, 300);
+      context.fillText('GAME OVER, your score is ' + score + ' premi INVIO', canvas.width / 2.01, 300);
       context.fillStyle = 'white';
-      context.fillText('GAME OVER, your score is ' + score, canvas.width / 2, 302);
+      context.fillText('GAME OVER, your score is ' + score + ' premi INVIO', canvas.width / 2, 302);
     }
   }
   //funzione riavvia gioco
