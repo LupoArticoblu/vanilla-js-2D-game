@@ -91,9 +91,6 @@ window.addEventListener("load", function(){
       this.frameY = 0;
     }
     draw(context) {
-      context.beginPath();
-      context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2.5, 0, 2 * Math.PI);
-      context.stroke();
       context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
     }
     update(input, deltaTime, enemies) {
@@ -101,11 +98,12 @@ window.addEventListener("load", function(){
       enemies.forEach(enemy => {
         //const dx = enemy.x - this.x;
         //const dy = enemy.y - this.y;
-        //Senza la seguente correzione le precedentiindicazioni andavano a puntare verso il centro dell'oggetto in movimento ma non lo comprendevano nella sua totalità
-        const dx = (enemy.x + enemy.width / 2) - (this.x + this.width / 2.5);
-        const dy = (enemy.y + enemy.height / 2) - (this.y + this.height / 2.5);
+        //Senza la seguente correzione le precedenti indicazioni andavano a puntare verso il centro dell'oggetto in movimento ma non lo comprendevano nella sua totalità
+        //rendiamo la collisione più "pulita"
+        const dx = (enemy.x + enemy.width / 2 - 20) - (this.x + this.width / 2);
+        const dy = (enemy.y + enemy.height / 2) - (this.y + this.height / 2 + 20);
         const distance = Math.hypot(dx, dy);
-        if(distance < enemy.width / 2.5 + this.width / 2) {
+        if(distance < enemy.width / 3 + this.width / 3) {
           gameOver = true;
           
         }
@@ -199,9 +197,6 @@ window.addEventListener("load", function(){
     }
 
     draw(context) {
-      context.beginPath();
-      context.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2.5, 0, 2 * Math.PI);
-      context.stroke();
       context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
     }
     //inseriamo come argomento deltaTime per rendere lineare il processo d'immagine frameByFrame unita alla velocità stabilita da math.random
@@ -247,9 +242,11 @@ window.addEventListener("load", function(){
     if(gameOver){
       context.textAlign = 'center';
       context.fillStyle = 'black';
-      context.fillText('GAME OVER, your score is ' + score + ' press ENTER or scroll down', canvas.width / 2.01, 300);
+      context.fillText('GAME OVER, your score: ' + score, canvas.width / 2.01, 300);
+      context.fillText('press ↵ or scroll down to restart', canvas.width / 2.01, 335);
       context.fillStyle = 'white';
-      context.fillText('GAME OVER, your score is ' + score + ' press ENTER or scroll down', canvas.width / 2, 302);
+      context.fillText('GAME OVER, your score: ' + score, canvas.width / 2.01, 302);
+      context.fillText('press ↵ or scroll down to restart', canvas.width / 2.01, 337);
     }
   }
   //funzione riavvia gioco
